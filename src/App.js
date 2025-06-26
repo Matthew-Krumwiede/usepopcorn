@@ -316,6 +316,19 @@ function WatchedMovie({ movie }) {
 function MovieDetails({ movieId, onCloseMovie }) {
   const [movieDetails, setMovieDetails] = useState({});
 
+  const {
+    Title: title,
+    Year: year,
+    Poster: poster,
+    Runtime: runtime,
+    imdbRating,
+    Plot: plot,
+    Released: released,
+    Actors: actors,
+    Director: director,
+    Genre: genre,
+  } = movieDetails;
+
   useEffect(
     function () {
       async function fetchMovieById() {
@@ -339,28 +352,34 @@ function MovieDetails({ movieId, onCloseMovie }) {
 
   return (
     <div className="details">
-      <button className="btn-back" onClick={onCloseMovie}>
-        &larr;
-      </button>
       <header>
-        <img src={movieDetails.Poster} alt="test" />
+        <button className="btn-back" onClick={onCloseMovie}>
+          &larr;
+        </button>
+        <img src={poster} alt={`Poster of ${movieDetails}`} />
         <div className="details-overview">
-          <h2>{movieDetails.Title}</h2>
+          <h2>{title}</h2>
           <p>
-            {movieDetails.Released} {movieDetails.Runtime}
+            {released} &bull; {runtime}
           </p>
-          <p>{movieDetails.Genre}</p>
+          <p>{genre}</p>
           <p>
-            <span>⭐️</span> {movieDetails.imdbRating} IMDb rating
+            <span>⭐️</span> {imdbRating} IMDb rating
           </p>
         </div>
       </header>
 
-      <StarRating className="rating" size={20} />
+      <section>
+        <div className="rating">
+          <StarRating size={24} maxRating={10} />
+        </div>
 
-      <p>{movieDetails.Plot}</p>
-      <p>Staring {movieDetails.Actors}</p>
-      <p>Directed By {movieDetails.Director}</p>
+        <p>
+          <em>{plot}</em>
+        </p>
+        <p>Staring {actors}</p>
+        <p>Directed By {director}</p>
+      </section>
     </div>
   );
 }

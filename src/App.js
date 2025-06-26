@@ -1,5 +1,7 @@
 import { useState, useEffect } from "react";
 
+import StarRating from "./StarRating";
+
 const tempMovieData = [
   {
     imdbID: "tt1375666",
@@ -55,28 +57,28 @@ const KEY = "d695c6f3";
 export default function App() {
   const [movies, setMovies] = useState(tempMovieData);
   const [watched, setWatched] = useState(tempWatchedData);
+  const [query, setQuery] = useState("");
   const [isLoading, setIsLoading] = useState(false);
   const [error, setError] = useState("");
-  const [query, setQuery] = useState("");
+  const [selectedMovieId, setSelectedMovieId] = useState(null);
 
-  const tempQuery = "interstellar";
+  /* useEffect(function () {
+     console.log("After intital render");
+   }, []);
 
-  // useEffect(function () {
-  //   console.log("After intital render");
-  // }, []);
+   useEffect(function () {
+     console.log("After every render");
+   });
 
-  // useEffect(function () {
-  //   console.log("After every render");
-  // });
+   useEffect(
+     function () {
+       console.log("After Query change");
+     },
+     [query]
+   );
 
-  // useEffect(
-  //   function () {
-  //     console.log("After Query change");
-  //   },
-  //   [query]
-  // );
-
-  // console.log("During render");
+   console.log("During render");}
+*/
 
   useEffect(
     function () {
@@ -123,13 +125,24 @@ export default function App() {
       <MovieSearchResult>
         <Box>
           {isLoading && <Loader />}
-          {!isLoading && !error && <MoviesList movies={movies} />}
+          {!isLoading && !error && (
+            <MoviesList
+              movies={movies}
+              setSelectedMovieId={setSelectedMovieId}
+            />
+          )}
           {error && <ErrorMessage message={error} />}
         </Box>
 
         <Box>
-          <WatchedSummary watched={watched} />
-          <WatchedMovieList watched={watched} />
+          {selectedMovieId ? (
+            <SelectedMovie movieId={selectedMovieId} />
+          ) : (
+            <>
+              <WatchedSummary watched={watched} />
+              <WatchedMovieList watched={watched} />
+            </>
+          )}
         </Box>
       </MovieSearchResult>
     </>
@@ -198,19 +211,23 @@ function Box({ children }) {
   );
 }
 
-function MoviesList({ movies }) {
+function MoviesList({ movies, setSelectedMovieId }) {
   return (
     <ul className="list">
       {movies?.map((movie) => (
-        <Movie movie={movie} key={movie.imdbID} />
+        <Movie
+          movie={movie}
+          key={movie.imdbID}
+          setSelectedMovieId={setSelectedMovieId}
+        />
       ))}
     </ul>
   );
 }
 
-function Movie({ movie }) {
+function Movie({ movie, setSelectedMovieId }) {
   return (
-    <li>
+    <li onClick={() => setSelectedMovieId(movie.imdbID)}>
       <img src={movie.Poster} alt={`${movie.Title} poster`} />
       <h3>{movie.Title}</h3>
       <div>
@@ -283,5 +300,54 @@ function WatchedMovie({ movie }) {
         </p>
       </div>
     </li>
+  );
+}
+
+function SelectedMovie({ movieId }) {
+  const [movieDetails, setMovieDetails] = useState({});
+
+  useEffect(
+    function () {
+      async function fetchMovieById() {
+        try {
+          const res = await fetch(
+            `https://www.omdbapi.com/?apikey=${KEY}&i=${movieId}`
+          );
+
+          const data = await res.json();
+          setMovieDetails(data);
+          console.log(data);
+        } catch (err) {
+          console.log(err);
+        }
+      }
+
+      fetchMovieById();
+    },
+    [movieId]
+  );
+
+  return (
+    <div className="details">
+      <header>
+        <img src={movieDetails.Poster} alt="test" />
+        <div className="details-overview">
+          <h2>{movieDetails.Title}</h2>
+          <p>
+            {movieDetails.Released} {movieDetails.Runtime}
+          </p>
+          <p>{movieDetails.Genre}</p>
+          <p>
+            <span>⭐️</span> {movieDetails.imdbRating} IMDb rating
+          </p>
+        </div>
+      </header>
+
+      <StarRating className="rating" size={20} />
+
+      <p>{movieDetails.Plot}</p>
+      <p>Staring {movieDetails.Actors}</p>
+      <p>Directed By {movieDetails.Director}</p>
+    </div>
   );
 }

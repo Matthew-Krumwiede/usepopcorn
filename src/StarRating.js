@@ -74,7 +74,6 @@ function Star({ onRate, full, onHoverIn, onHoverOut, color, size }) {
     display: "block",
     cursor: "pointer",
   };
-  console.log(size);
 
   return (
     <span

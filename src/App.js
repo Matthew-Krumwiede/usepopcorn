@@ -80,6 +80,16 @@ export default function App() {
    console.log("During render");}
 */
 
+  function handleSelectMovie(movieId) {
+    setSelectedMovieId((selectedId) =>
+      movieId === selectedId ? null : movieId
+    );
+  }
+
+  function handleCloseMovie() {
+    setSelectedMovieId(null);
+  }
+
   useEffect(
     function () {
       async function fetchMovies() {
@@ -126,17 +136,17 @@ export default function App() {
         <Box>
           {isLoading && <Loader />}
           {!isLoading && !error && (
-            <MoviesList
-              movies={movies}
-              setSelectedMovieId={setSelectedMovieId}
-            />
+            <MoviesList movies={movies} onMovieSelected={handleSelectMovie} />
           )}
           {error && <ErrorMessage message={error} />}
         </Box>
 
         <Box>
           {selectedMovieId ? (
-            <SelectedMovie movieId={selectedMovieId} />
+            <MovieDetails
+              movieId={selectedMovieId}
+              onCloseMovie={handleCloseMovie}
+            />
           ) : (
             <>
               <WatchedSummary watched={watched} />
@@ -211,23 +221,23 @@ function Box({ children }) {
   );
 }
 
-function MoviesList({ movies, setSelectedMovieId }) {
+function MoviesList({ movies, onMovieSelected }) {
   return (
-    <ul className="list">
+    <ul className="list list-movies">
       {movies?.map((movie) => (
         <Movie
           movie={movie}
           key={movie.imdbID}
-          setSelectedMovieId={setSelectedMovieId}
+          onMovieSelected={onMovieSelected}
         />
       ))}
     </ul>
   );
 }
 
-function Movie({ movie, setSelectedMovieId }) {
+function Movie({ movie, onMovieSelected }) {
   return (
-    <li onClick={() => setSelectedMovieId(movie.imdbID)}>
+    <li onClick={() => onMovieSelected(movie.imdbID)}>
       <img src={movie.Poster} alt={`${movie.Title} poster`} />
       <h3>{movie.Title}</h3>
       <div>
@@ -303,7 +313,7 @@ function WatchedMovie({ movie }) {
   );
 }
 
-function SelectedMovie({ movieId }) {
+function MovieDetails({ movieId, onCloseMovie }) {
   const [movieDetails, setMovieDetails] = useState({});
 
   useEffect(
@@ -329,6 +339,9 @@ function SelectedMovie({ movieId }) {
 
   return (
     <div className="details">
+      <button className="btn-back" onClick={onCloseMovie}>
+        &larr;
+      </button>
       <header>
         <img src={movieDetails.Poster} alt="test" />
         <div className="details-overview">
